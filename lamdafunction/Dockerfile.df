@@ -1,0 +1,27 @@
+# Use the AWS Lambda base image for Python
+FROM public.ecr.aws/lambda/python:3.11
+
+# Set the working directory
+WORKDIR /var/task
+
+# Install system dependencies for Playwright and Chromium
+RUN yum install -y \
+    wget \
+    unzip \
+    chromium \
+    chromium-headless \
+    chromedriver \
+    && yum clean all
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright browsers
+RUN pip install playwright && playwright install-deps && playwright install
+
+# Copy the application code
+COPY . .
+
+# Lambda handler (set to app.lambda_handler function)
+CMD ["app.lambda_handler"]
